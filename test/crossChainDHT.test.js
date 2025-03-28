@@ -23,11 +23,11 @@ describe("DecentralizedDHTNode - Cross Chain", function () {
 
         provider1 = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
         provider2 = new ethers.JsonRpcProvider("http://127.0.0.1:8546");
-      
+
         wallet1 = account1.connect(provider1);
         wallet2 = account2.connect(provider2);
 
-        
+
         // Deploy DHTNode1 chain principale
         const DHTNode1 = await ethers.getContractFactory("DHTNode1");
         const nonce1 = await provider1.getTransactionCount(wallet1.address);
@@ -91,7 +91,10 @@ describe("DecentralizedDHTNode - Cross Chain", function () {
             isLocal: false
         };
         console.log("Neighbor coordinates:", neighborCoordinates);
-        await dhtNode1.addNeighbor(dhtNode2.target, ethers.encodeBytes32String("node2"), neighborCoordinates);
+        // Verifica che l'evento venga emesso
+        await expect(dhtNode1.addNeighbor(dhtNode2.target, ethers.encodeBytes32String("node2"), neighborCoordinates))
+            .to.emit(dhtNode1, "NeighborAdded")
+            .withArgs(dhtNode2.target, ethers.encodeBytes32String("node2"), [neighborCoordinates.chainId, neighborCoordinates.contractAddress]);
 
         // // Registriamo un attributo su chain2
         // await network.provider.request({
@@ -105,8 +108,8 @@ describe("DecentralizedDHTNode - Cross Chain", function () {
         //     }]
         // });
 
-        await dhtNode2.connect(wallet2).storeAttributeLocal("pressure", ethers.encodeBytes32String("1013"));
-
+        const resp = await dhtNode2.connect(wallet2).storeAttributeLocal("pressure", ethers.encodeBytes32String("1013"));
+        console.log("resp", resp);
         // // Torniamo alla chain1
         // await network.provider.request({
         //     method: "hardhat_reset",
@@ -114,8 +117,9 @@ describe("DecentralizedDHTNode - Cross Chain", function () {
         // });
 
         // Testiamo la richiesta distribuita
-        const [value, coordinates] = await dhtNode2.getDistributedAttribute("pressure");
+        const [value, coordinates] = await dhtNode1.getDistributedAttribute("pressure");
 
+        
         expect(coordinates.chainId).to.equal(chain2.id);
         expect(coordinates.contractAddress).to.equal(dhtNode2.target);
 
