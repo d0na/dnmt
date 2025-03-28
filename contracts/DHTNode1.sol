@@ -8,6 +8,6 @@ contract DHTNode1 is DecentralizedDHTNode {
 
     constructor() {
         // Questo nodo ha un valore locale per l'attributo "material"
-        storeAttribute( "protection", "100");
+        storeAttributeLocal( "protection", "100");
     }
 }

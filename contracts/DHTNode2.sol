@@ -8,6 +8,6 @@ contract DHTNode2 is DecentralizedDHTNode {
         0x706970706f000000000000000000000000000000000000000000000000000000;
 
     constructor() {
-        storeAttribute("name", "NMT on DHTnode2");
+        storeAttributeLocal("name", "NMT on DHTnode2");
     }
 }
